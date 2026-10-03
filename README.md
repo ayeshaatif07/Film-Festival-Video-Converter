@@ -14,9 +14,9 @@ A Python tool that checks whether submitted films meet the technical requirement
 
 ## How It Works
 
-1. **Set up ffmpeg.** The script installs `ffmpeg` (which includes `ffprobe`) and prints the installed versions.
+1. **Set up ffmpeg.** The script tries to install `ffmpeg` (which includes `ffprobe`) with `apt-get`. If that is not possible, for example on macOS, it carries on with the ffmpeg you already have, and it prints the installed versions.
 2. **Analyse each video** in the input folder with `ffprobe`. It reads the container, video codec, audio codec, resolution and frame rate.
-3. **Check compliance** by comparing those values with the requirements. A frame rate within 0.1 FPS of 25 is accepted. Every mismatch is listed.
+3. **Check compliance** by comparing those values with the requirements. A frame rate within 0.1 FPS of 25 is accepted, and the file must be an MP4 file. Every mismatch is listed, and files that already comply are left alone.
 4. **Convert** each video that fails any check with `ffmpeg`:
    - video: H.265 (`libx265`), CRF 23, medium preset
    - scaled to 640x360 and set to 25 FPS
@@ -46,7 +46,7 @@ The original films (in MP4, MOV and AVI formats, about 300 MB in total) are not 
 
 ## Run Locally
 
-You need Python 3 and ffmpeg.
+You need Python 3 and ffmpeg. On macOS you can install ffmpeg with `brew install ffmpeg`. On Linux the script installs it for you with `apt-get` if it has permission.
 
 ```bash
 git clone https://github.com/ayeshaatif07/Film-Festival-Video-Converter.git
@@ -59,7 +59,7 @@ Put the videos you want to check in the `Exercise3files/` folder, then run:
 python3 "Exercise 3.py"
 ```
 
-The script installs ffmpeg with `apt-get`, so it is written for a Linux environment such as a Jupyter or Docker container, run with permission to install packages. On macOS or Windows `apt-get` does not exist and the script stops at that step. To run it there, install ffmpeg yourself (for example `brew install ffmpeg` on macOS) and remove the `install_ffmpeg()` call near the top of the script.
+Each video is analysed. Non-compliant ones are converted and saved next to the original as `<name>_formatOK.mp4`. The `_formatOK.mp4` films already in the folder are recognised as compliant and are not converted again.
 
 ## Author and Credits
 

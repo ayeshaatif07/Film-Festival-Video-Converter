@@ -58,8 +58,8 @@ def install_ffmpeg():
         
         print("   ✅ Installation successful!")
         
-    except subprocess.CalledProcessError as e:
-        # If installation fails
+    except (subprocess.CalledProcessError, FileNotFoundError) as e:
+        # If installation fails (or apt-get is missing, e.g. macOS)
         print(f"   ⚠️  Installation failed: {e}")
         print("   Checking if ffmpeg is already installed...")
     
@@ -187,7 +187,7 @@ def get_video_info(video_file):
         return {
             'filename': os.path.basename(video_file),
             'filepath': video_file,
-            'container': data['format']['format_name'].split(',')[0],
+            'container': data['format']['format_name'],  # full list, e.g. "mov,mp4,m4a,3gp,3g2,mj2"
             'video_codec': video_stream.get('codec_name', 'unknown'),
             'audio_codec': audio_stream.get('codec_name', 'unknown') if audio_stream else 'none',
             'width': width,
@@ -216,8 +216,10 @@ def check_format_compliance(video_info):
 
     issues = []
 
-    # Check container format
-    if video_info['container'] != REQUIRED_FORMAT['container']:
+    # Check container format (ffprobe lists several names for MP4/MOV, so also check the extension)
+    is_mp4 = (REQUIRED_FORMAT['container'] in video_info['container'].split(',')
+              and video_info['filename'].lower().endswith('.mp4'))
+    if not is_mp4:
         issues.append("Container format mismatch")
 
     # Check video codec
